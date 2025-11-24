@@ -10,6 +10,8 @@
 
 Each real estate asset is represented by a single NFT that contains the core metadata of the property.
 
+![Image 1](https://github.com/user-attachments/assets/5236e02e-aa8b-4cea-9fa3-1b9e3562fa48)
+
 
 ---
 
@@ -22,6 +24,8 @@ When a property is tokenized:
 * Example: Supply of **20 tokens**, each one equals **5%** ownership.
 
 If Alice transfers 5 tokens to Bob → Bob now owns **25%** of the property’s economic rights.
+
+![Image 2](https://github.com/user-attachments/assets/fe67d7d7-26d6-43fe-a5cf-0a3f964d7d00)
 
 
 ---
