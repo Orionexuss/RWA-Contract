@@ -71,4 +71,6 @@ The blockchain only manages *digital ownership*. Legal rights over real-world pr
 
 ---
 
-*End of README*
+## Development Status
+
+This protocol is **still under active development**, and features or behavior may change as the project evolves.
