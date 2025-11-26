@@ -1,4 +1,43 @@
 use anchor_lang::prelude::*;
+use anchor_spl::{token_2022::spl_token_2022::instruction::AuthorityType, token_interface::{mint_to, set_authority, Mint, MintTo, SetAuthority, TokenInterface}};
 
 #[derive(Accounts)]
-pub struct CreateFungibleToken<'info> {}
+#[instruction(decimals: u8)]
+pub struct CreateFungibleToken<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    
+    #[account(
+        init, 
+        payer = payer,
+        mint::decimals = decimals,
+        mint::authority = payer,
+    )]
+    pub mint: InterfaceAccount<'info, Mint>,
+
+    pub system_program: UncheckedAccount<'info>,
+    pub token_program:  Interface<'info, TokenInterface>
+
+}
+
+pub fn create_fungible_token_and_revoke_authority(ctx: Context<CreateFungibleToken>, decimals: u8, supply: u8) -> Result<()> {
+    let cpi_accounts = MintTo {
+        mint: ctx.accounts.mint.to_account_info(),
+        to: ctx.accounts.payer.to_account_info(),
+        authority: ctx.accounts.payer.to_account_info(),
+    };
+
+    let cpi_program = ctx.accounts.token_program.to_account_info();
+    let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
+    mint_to(cpi_ctx, supply as u64 * 10u64.pow(decimals as u32))?;
+    
+    let cpi_accounts_for_revoke = SetAuthority{
+        account_or_mint: ctx.accounts.mint.to_account_info(),
+        current_authority: ctx.accounts.payer.to_account_info(),
+    };
+
+    let cpi_ctx_revoke = CpiContext::new(ctx.accounts.token_program.to_account_info(), cpi_accounts_for_revoke);
+    set_authority(cpi_ctx_revoke,AuthorityType::MintTokens, None)?;
+
+    Ok(())
+}
