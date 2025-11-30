@@ -1,6 +1,9 @@
 use anchor_lang::prelude::*;
+use anchor_spl::token_interface::Mint;
 use mpl_core::instructions::CreateV2CpiBuilder;
 use mpl_core::ID as MPL_CORE_ID;
+
+use crate::AssetState;
 
 #[derive(AnchorDeserialize, AnchorSerialize)]
 pub struct CreateAssetArgs {
@@ -33,6 +36,17 @@ pub struct CreateNonFungibleToken<'info> {
     )]
     pub authority_pda: UncheckedAccount<'info>,
 
+    pub ft_token: InterfaceAccount<'info, Mint>,
+
+    #[account(
+        init,
+        payer = payer,
+        space = 8 + AssetState::INIT_SPACE,
+        seeds = [b"asset_state", asset.key().as_ref()],
+        bump
+    )]
+    pub asset_state: Account<'info, AssetState>,
+
     pub system_program: Program<'info, System>,
 
     #[account(address = MPL_CORE_ID)]
@@ -55,6 +69,12 @@ pub fn create_non_fungible_token(
         .uri(args.uri)
         .name(args.name)
         .invoke()?;
+
+    let asset_state = &mut ctx.accounts.asset_state;
+    asset_state.nft = ctx.accounts.asset.key();
+    asset_state.ft_mint = ctx.accounts.ft_token.key();
+    asset_state.total_shares = ctx.accounts.ft_token.supply;
+    asset_state.bump = ctx.bumps.asset_state;
 
     Ok(())
 }
