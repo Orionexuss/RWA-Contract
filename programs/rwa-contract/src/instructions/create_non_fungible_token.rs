@@ -3,7 +3,7 @@ use anchor_spl::token_interface::Mint;
 use mpl_core::instructions::CreateV2CpiBuilder;
 use mpl_core::ID as MPL_CORE_ID;
 
-use crate::AssetState;
+use crate::state::AssetState;
 
 #[derive(AnchorDeserialize, AnchorSerialize)]
 pub struct CreateAssetArgs {
@@ -54,7 +54,7 @@ pub struct CreateNonFungibleToken<'info> {
     pub mpl_core_program: UncheckedAccount<'info>,
 }
 
-pub fn create_non_fungible_token(
+pub fn handle_create_non_fungible_token(
     ctx: Context<CreateNonFungibleToken>,
     args: CreateAssetArgs,
 ) -> Result<()> {
