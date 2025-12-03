@@ -71,7 +71,7 @@ pub fn handle_create_non_fungible_token(
         .invoke()?;
 
     let asset_state = &mut ctx.accounts.asset_state;
-    asset_state.nft = ctx.accounts.asset.key();
+    asset_state.asset = ctx.accounts.asset.key();
     asset_state.ft_mint = ctx.accounts.ft_token.key();
     asset_state.total_shares = ctx.accounts.ft_token.supply;
     asset_state.bump = ctx.bumps.asset_state;
