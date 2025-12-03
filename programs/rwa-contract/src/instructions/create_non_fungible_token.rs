@@ -36,7 +36,7 @@ pub struct CreateNonFungibleToken<'info> {
     )]
     pub authority_pda: UncheckedAccount<'info>,
 
-    pub ft_token: InterfaceAccount<'info, Mint>,
+    pub ft_mint: InterfaceAccount<'info, Mint>,
 
     #[account(
         init,
@@ -72,8 +72,8 @@ pub fn handle_create_non_fungible_token(
 
     let asset_state = &mut ctx.accounts.asset_state;
     asset_state.asset = ctx.accounts.asset.key();
-    asset_state.ft_mint = ctx.accounts.ft_token.key();
-    asset_state.total_shares = ctx.accounts.ft_token.supply;
+    asset_state.ft_mint = ctx.accounts.ft_mint.key();
+    asset_state.total_shares = ctx.accounts.ft_mint.supply;
     asset_state.bump = ctx.bumps.asset_state;
 
     Ok(())

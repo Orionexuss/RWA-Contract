@@ -33,4 +33,8 @@ pub mod rwa_contract {
     ) -> Result<()> {
         handle_create_non_fungible_token(ctx, args)
     }
+
+    pub fn create_vote_round(ctx: Context<CreateVoteRound>, description: String) -> Result<()> {
+        handle_create_vote_round(ctx, description)
+    }
 }
