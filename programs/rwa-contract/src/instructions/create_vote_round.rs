@@ -1,4 +1,4 @@
-use anchor_lang::prelude::{program_pack::Pack, *};
+use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{Mint, TokenAccount};
 
 use crate::error::ErrorCode;
@@ -15,7 +15,7 @@ pub struct CreateVoteRound<'info> {
         token::mint = ft_mint.key(),
         token::authority = payer.key()
     )]
-    pub token_account: Account<'info, TokenAccount>,
+    pub token_account: InterfaceAccount<'info, TokenAccount>,
 
     pub ft_mint: InterfaceAccount<'info, Mint>,
 
@@ -61,7 +61,9 @@ pub fn handle_create_vote_round(ctx: Context<CreateVoteRound>, description: Stri
     vote.yes_weight = 0;
     vote.no_weight = 0;
 
+    let vote_round_count = ctx.accounts.vote_round_index.vote_round_count;
     let vote_round_index = &mut ctx.accounts.vote_round_index;
     vote_round_index.asset = ctx.accounts.asset.key();
-    vote_round_index.vote_round_count = ctx.accounts.vote_round_index.vote_round_count + 1;
+    vote_round_index.vote_round_count = vote_round_count + 1;
+    Ok(())
 }
