@@ -3,7 +3,7 @@ use anchor_lang::prelude::*;
 #[account]
 #[derive(InitSpace)]
 pub struct VoteState {
-    pub voter: Pubkey,
+    pub voting_creator: Pubkey,
 
     #[max_len(50)]
     pub description: String,

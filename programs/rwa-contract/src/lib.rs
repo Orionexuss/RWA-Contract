@@ -37,4 +37,8 @@ pub mod rwa_contract {
     pub fn create_vote_round(ctx: Context<CreateVoteRound>, description: String) -> Result<()> {
         handle_create_vote_round(ctx, description)
     }
+
+    pub fn vote(ctx: Context<Vote>, choice: u8) -> Result<()> {
+        handle_vote(ctx, choice)
+    }
 }

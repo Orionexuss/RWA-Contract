@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{Mint, TokenAccount};
 
 use crate::error::ErrorCode;
-use crate::state::{AssetState, VoteRoundIndexState, VoteState};
+use crate::state::{AssetState, VoteRecord, VoteRoundIndexState, VoteState};
 
 #[derive(Accounts)]
 pub struct CreateVoteRound<'info> {
@@ -56,7 +56,7 @@ pub fn handle_create_vote_round(ctx: Context<CreateVoteRound>, description: Stri
 
     let vote = &mut ctx.accounts.vote_state;
     vote.description = description;
-    vote.voter = ctx.accounts.payer.key();
+    vote.voting_creator = ctx.accounts.payer.key();
     vote.asset = ctx.accounts.asset.key();
     vote.yes_weight = 0;
     vote.no_weight = 0;

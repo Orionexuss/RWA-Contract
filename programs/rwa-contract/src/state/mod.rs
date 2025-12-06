@@ -6,3 +6,6 @@ pub use vote::*;
 
 pub mod vote_round_index_state;
 pub use vote_round_index_state::*;
+
+pub mod vote_record;
+pub use vote_record::*;
