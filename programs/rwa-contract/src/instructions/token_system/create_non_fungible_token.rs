@@ -4,6 +4,7 @@ use mpl_core::instructions::CreateV2CpiBuilder;
 use mpl_core::ID as MPL_CORE_ID;
 
 use crate::state::AssetState;
+use crate::{SEED_STATE_ACCOUNT, SEED_VAULT_AUTHORITY_ACCOUNT, SEED_VAULT_OWNER_ACCOUNT};
 
 #[derive(AnchorDeserialize, AnchorSerialize)]
 pub struct CreateAssetArgs {
@@ -22,7 +23,7 @@ pub struct CreateNonFungibleToken<'info> {
         init,
         payer = payer,
         space = 0,
-        seeds = [b"vault_owner"],
+        seeds = [SEED_VAULT_OWNER_ACCOUNT, asset.key().as_ref()],
         bump
     )]
     pub owner: UncheckedAccount<'info>,
@@ -31,7 +32,7 @@ pub struct CreateNonFungibleToken<'info> {
         init,
         payer = payer,
         space = 0,
-        seeds = [b"vault_authority"],
+        seeds = [SEED_VAULT_AUTHORITY_ACCOUNT, asset.key().as_ref()],
         bump
     )]
     pub authority_pda: UncheckedAccount<'info>,
@@ -42,7 +43,7 @@ pub struct CreateNonFungibleToken<'info> {
         init,
         payer = payer,
         space = 8 + AssetState::INIT_SPACE,
-        seeds = [b"asset_state", asset.key().as_ref()],
+        seeds = [SEED_STATE_ACCOUNT, asset.key().as_ref()],
         bump
     )]
     pub asset_state: Account<'info, AssetState>,

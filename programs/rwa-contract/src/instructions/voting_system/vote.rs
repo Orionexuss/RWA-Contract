@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{Mint, TokenAccount};
 
-use crate::{error::ErrorCode, state::{VoteRecord, VoteState}};
+use crate::{error::ErrorCode, state::{VoteRecord, VoteState}, SEED_STATE_ACCOUNT, SEED_VOTE_RECORD_ACCOUNT};
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Eq)]
 pub enum Choice {
@@ -21,7 +21,7 @@ pub struct Vote<'info> {
 
     #[account(
         mut,
-        seeds = [b"asset_state", asset.key().as_ref()],
+        seeds = [SEED_STATE_ACCOUNT, asset.key().as_ref()],
         bump = vote_state.bump,
         has_one = ft_mint, 
         has_one = asset
@@ -33,7 +33,7 @@ pub struct Vote<'info> {
         payer = voter,
         space = 8 + VoteRecord::INIT_SPACE,
         seeds = [
-            b"vote_record",
+            SEED_VOTE_RECORD_ACCOUNT,
             vote_state.key().as_ref(),
             voter.key().as_ref(),
         ],

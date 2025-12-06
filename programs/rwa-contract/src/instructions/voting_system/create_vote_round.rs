@@ -2,7 +2,8 @@ use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{Mint, TokenAccount};
 
 use crate::error::ErrorCode;
-use crate::state::{AssetState, VoteRecord, VoteRoundIndexState, VoteState};
+use crate::state::{AssetState, VoteRoundIndexState, VoteState};
+use crate::{SEED_STATE_ACCOUNT, SEED_VOTE_ROUND_ACCOUNT};
 
 #[derive(Accounts)]
 pub struct CreateVoteRound<'info> {
@@ -29,7 +30,7 @@ pub struct CreateVoteRound<'info> {
         init_if_needed,
         payer = payer,
         space = 8 + VoteRoundIndexState::INIT_SPACE,
-        seeds = [b"vote_round_index", asset.key().as_ref()],
+        seeds = [SEED_VOTE_ROUND_ACCOUNT, asset.key().as_ref()],
         bump,
     )]
     // Each vote round gets a unique vote_state account, derived using vote_round_count as a seed.
@@ -39,7 +40,7 @@ pub struct CreateVoteRound<'info> {
         init,
         payer = payer,
         space = 8 +VoteState::INIT_SPACE,
-        seeds = [b"vote", asset.key().as_ref(), payer.key().as_ref(), vote_round_index.vote_round_count.to_le_bytes().as_ref()],
+        seeds = [SEED_STATE_ACCOUNT, asset.key().as_ref(), payer.key().as_ref(), vote_round_index.vote_round_count.to_le_bytes().as_ref()],
         bump
     )]
     pub vote_state: Account<'info, VoteState>,
