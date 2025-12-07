@@ -9,3 +9,6 @@ pub use vote_round_index_state::*;
 
 pub mod vote_record;
 pub use vote_record::*;
+
+pub mod auction_state;
+pub use auction_state::*;

@@ -16,4 +16,7 @@ pub enum ErrorCode {
 
     #[msg("Arithmetic operation resulted in an overflow.")]
     Overflow,
+
+    #[msg("The token account has insufficient balance for the operation.")]
+    InsuficientTokenBalance,
 }
