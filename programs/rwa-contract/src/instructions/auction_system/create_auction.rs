@@ -1,3 +1,4 @@
+use crate::state::AssetState;
 use crate::{error::ErrorCode, state::AuctionState};
 use crate::{SEED_AUCTION_STATE_ACCOUNT, SEED_AUCTION_VAULT_ACCOUNT};
 use anchor_lang::prelude::*;
@@ -10,10 +11,17 @@ pub struct CreateAuction<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 
-    pub mint: InterfaceAccount<'info, Mint>,
+    pub ft_mint: InterfaceAccount<'info, Mint>,
 
     #[account(
-        token::mint = mint.key(),
+        has_one = ft_mint,
+        seeds = [SEED_AUCTION_STATE_ACCOUNT, ft_mint.key().as_ref()],
+        bump = asset_state.bump,
+    )]
+    pub asset_state: Account<'info, AssetState>,
+
+    #[account(
+        token::mint = ft_mint.key(),
         token::authority = payer.key()
     )]
     pub token_account: InterfaceAccount<'info, TokenAccount>,
@@ -21,7 +29,7 @@ pub struct CreateAuction<'info> {
     #[account(
         init_if_needed,
         payer = payer,
-        token::mint = mint,
+        token::mint = ft_mint,
         token::authority = token_account,
         token::token_program = token_program,
         seeds = [SEED_AUCTION_VAULT_ACCOUNT, payer.key().as_ref()],
@@ -59,12 +67,12 @@ pub fn handle_create_auction(
         from: ctx.accounts.token_account.to_account_info(),
         to: ctx.accounts.auction_vault.to_account_info(),
         authority: ctx.accounts.payer.to_account_info(),
-        mint: ctx.accounts.mint.to_account_info(),
+        mint: ctx.accounts.ft_mint.to_account_info(),
     };
 
     let cpi_program = ctx.accounts.token_program.to_account_info();
     let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
-    transfer_checked(cpi_ctx, amount, ctx.accounts.mint.decimals)?;
+    transfer_checked(cpi_ctx, amount, ctx.accounts.ft_mint.decimals)?;
 
     let auction_state = &mut ctx.accounts.auction_state;
     auction_state.auction_creator = ctx.accounts.payer.key();
