@@ -3,7 +3,7 @@ use anchor_spl::token_interface::{Mint, TokenAccount};
 
 use crate::error::ErrorCode;
 use crate::state::{AssetState, VoteRoundIndexState, VoteState};
-use crate::{SEED_STATE_ACCOUNT, SEED_VOTE_ROUND_ACCOUNT};
+use crate::{SEED_STATE_ACCOUNT, SEED_VOTE_ROUND_ACCOUNT, SEED_VOTE_STATE_ACCOUNT};
 
 #[derive(Accounts)]
 pub struct CreateVoteRound<'info> {
@@ -22,7 +22,9 @@ pub struct CreateVoteRound<'info> {
 
     #[account(
         has_one = asset,
-        has_one = ft_mint
+        has_one = ft_mint,
+        seeds = [SEED_STATE_ACCOUNT, asset.key().as_ref()],
+        bump = asset_state.bump,
     )]
     pub asset_state: Account<'info, AssetState>,
 
@@ -40,7 +42,7 @@ pub struct CreateVoteRound<'info> {
         init,
         payer = payer,
         space = 8 +VoteState::INIT_SPACE,
-        seeds = [SEED_STATE_ACCOUNT, asset.key().as_ref(), payer.key().as_ref(), vote_round_index.vote_round_count.to_le_bytes().as_ref()],
+        seeds = [SEED_VOTE_STATE_ACCOUNT, asset.key().as_ref(), payer.key().as_ref(), vote_round_index.vote_round_count.to_le_bytes().as_ref()],
         bump
     )]
     pub vote_state: Account<'info, VoteState>,

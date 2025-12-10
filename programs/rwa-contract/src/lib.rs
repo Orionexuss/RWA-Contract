@@ -40,4 +40,16 @@ pub mod rwa_contract {
     pub fn vote(ctx: Context<Vote>, choice: u8) -> Result<()> {
         handle_vote(ctx, choice)
     }
+
+    pub fn create_auction(
+        ctx: Context<CreateAuction>,
+        amount: u64,
+        auction_end_time: i64,
+    ) -> Result<()> {
+        handle_create_auction(ctx, amount, auction_end_time)
+    }
+
+    pub fn place_bid(ctx: Context<PlaceBid>, bid_amount: u64) -> Result<()> {
+        handle_place_bid(ctx, bid_amount)
+    }
 }

@@ -1,6 +1,6 @@
 use crate::state::AssetState;
 use crate::{error::ErrorCode, state::AuctionState};
-use crate::{SEED_AUCTION_STATE_ACCOUNT, SEED_AUCTION_VAULT_ACCOUNT};
+use crate::{SEED_AUCTION_STATE_ACCOUNT, SEED_AUCTION_VAULT_ACCOUNT, SEED_STATE_ACCOUNT};
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{
     transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked,
@@ -13,21 +13,24 @@ pub struct CreateAuction<'info> {
 
     pub ft_mint: InterfaceAccount<'info, Mint>,
 
+    pub asset: AccountInfo<'info>,
+
     #[account(
         has_one = ft_mint,
-        seeds = [SEED_AUCTION_STATE_ACCOUNT, ft_mint.key().as_ref()],
+        has_one = asset,
+        seeds = [SEED_STATE_ACCOUNT, asset.key().as_ref()],
         bump = asset_state.bump,
     )]
     pub asset_state: Account<'info, AssetState>,
 
     #[account(
         token::mint = ft_mint.key(),
-        token::authority = payer.key()
+        token::authority = payer.key(),
     )]
     pub token_account: InterfaceAccount<'info, TokenAccount>,
 
     #[account(
-        init_if_needed,
+        init,
         payer = payer,
         token::mint = ft_mint,
         token::authority = token_account,
@@ -55,10 +58,8 @@ pub fn handle_create_auction(
     amount: u64,
     auction_end_time: i64,
 ) -> Result<()> {
-    // Validate that the signer has a balance greater than 0
     let token_account_data = &ctx.accounts.token_account;
 
-    // Check if the token account has enough balance for the auction
     if token_account_data.amount < amount {
         return Err(ErrorCode::InsuficientTokenBalance.into());
     }
@@ -75,10 +76,12 @@ pub fn handle_create_auction(
     transfer_checked(cpi_ctx, amount, ctx.accounts.ft_mint.decimals)?;
 
     let auction_state = &mut ctx.accounts.auction_state;
+    auction_state.asset = ctx.accounts.asset.key();
     auction_state.auction_creator = ctx.accounts.payer.key();
     auction_state.is_active = true;
     auction_state.highest_bid = 0;
     auction_state.auction_end_time = auction_end_time;
+    auction_state.bump = ctx.bumps.auction_state;
 
     Ok(())
 }

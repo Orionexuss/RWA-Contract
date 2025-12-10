@@ -19,4 +19,10 @@ pub enum ErrorCode {
 
     #[msg("The token account has insufficient balance for the operation.")]
     InsuficientTokenBalance,
+
+    #[msg("The auction has already ended.")]
+    AuctionEnded,
+
+    #[msg("Bid amount must be higher than the current highest bid.")]
+    BidTooLow,
 }
