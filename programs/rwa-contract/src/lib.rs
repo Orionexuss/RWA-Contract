@@ -52,4 +52,8 @@ pub mod rwa_contract {
     pub fn place_bid(ctx: Context<PlaceBid>, bid_amount: u64) -> Result<()> {
         handle_place_bid(ctx, bid_amount)
     }
+
+    pub fn settle_auction(ctx: Context<SettleAuction>) -> Result<()> {
+        handle_settle_auction(ctx)
+    }
 }

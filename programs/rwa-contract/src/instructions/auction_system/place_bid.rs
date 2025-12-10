@@ -16,25 +16,26 @@ pub struct PlaceBid<'info> {
 
     pub asset: AccountInfo<'info>,
 
-    pub ft_mint: InterfaceAccount<'info, Mint>,
+    /// USDC mint - must match the auction's bid_mint
+    pub usdc_mint: InterfaceAccount<'info, Mint>,
 
     #[account(
-        token::mint = ft_mint.key(),
+        token::mint = usdc_mint.key(),
         token::authority = bidder.key()
     )]
-    pub bidder_token_account: InterfaceAccount<'info, TokenAccount>,
+    pub bidder_usdc_account: InterfaceAccount<'info, TokenAccount>,
 
     #[account(
         mut,
         has_one = auction_creator,
         has_one = asset,
+        constraint = auction_state.bid_token_mint == usdc_mint.key() @ ErrorCode::InvalidBidToken,
         seeds = [SEED_AUCTION_STATE_ACCOUNT, auction_creator.key().as_ref()],
         bump = auction_state.bump
         )]
     pub auction_state: Account<'info, AuctionState>,
 
     #[account(
-        has_one = ft_mint,
         has_one = asset,
         seeds = [SEED_STATE_ACCOUNT, asset.key().as_ref()],
         bump = asset_state.bump,
@@ -44,7 +45,7 @@ pub struct PlaceBid<'info> {
     #[account(
         init_if_needed,
         payer = bidder,
-        associated_token::mint = ft_mint,
+        associated_token::mint = usdc_mint,
         associated_token::authority = auction_state
         
     )]
@@ -55,7 +56,7 @@ pub struct PlaceBid<'info> {
     pub token_program: Interface<'info, TokenInterface>,
 }
 
-pub fn handle_place_bid(ctx: Context<PlacedBid>, amount: u64) -> Result<()> {
+pub fn handle_place_bid(ctx: Context<PlaceBid>, amount: u64) -> Result<()> {
 
     // Validations
     // Check if auction is still active
@@ -63,28 +64,28 @@ pub fn handle_place_bid(ctx: Context<PlacedBid>, amount: u64) -> Result<()> {
     let auction_state = &mut ctx.accounts.auction_state;
     require!(clock.unix_timestamp < auction_state.auction_end_time, ErrorCode::AuctionEnded);
 
-    // Check if bidder has enough balance
-    let bidder_token_account = &ctx.accounts.bidder_token_account;
-    require!(bidder_token_account.amount >= amount, ErrorCode::InsuficientTokenBalance);
+    // Check if bidder has enough USDC balance
+    let bidder_usdc_account = &ctx.accounts.bidder_usdc_account;
+    require!(bidder_usdc_account.amount >= amount, ErrorCode::InsuficientTokenBalance);
 
     // Check if bid amount is higher than current highest bid
     if amount <= auction_state.highest_bid {
         return Err(ErrorCode::BidTooLow.into());
     }
 
-    // Transfer bid amount from bidder to bids_vault
+    // Transfer USDC bid amount from bidder to bids_vault
     let cpi_accounts = TransferChecked {
-        from: ctx.accounts.bidder_token_account.to_account_info(),
+        from: ctx.accounts.bidder_usdc_account.to_account_info(),
         to: ctx.accounts.bids_vault.to_account_info(),
         authority: ctx.accounts.bidder.to_account_info(),
-        mint: ctx.accounts.ft_mint.to_account_info(),
+        mint: ctx.accounts.usdc_mint.to_account_info(),
     };
 
     let cpi_program = ctx.accounts.token_program.to_account_info();
 
     let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
 
-    let decimals = ctx.accounts.ft_mint.decimals;
+    let decimals = ctx.accounts.usdc_mint.decimals;
 
     transfer_checked(cpi_ctx, amount, decimals)?;
 

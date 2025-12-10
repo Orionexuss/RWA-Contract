@@ -1,3 +1,4 @@
+use crate::constants::USDC_MINT_DEVNET;
 use crate::state::AssetState;
 use crate::{error::ErrorCode, state::AuctionState};
 use crate::{SEED_AUCTION_STATE_ACCOUNT, SEED_AUCTION_VAULT_ACCOUNT, SEED_STATE_ACCOUNT};
@@ -12,6 +13,12 @@ pub struct CreateAuction<'info> {
     pub payer: Signer<'info>,
 
     pub ft_mint: InterfaceAccount<'info, Mint>,
+
+    /// USDC mint account for bids
+    #[account(
+        constraint = usdc_mint.key().to_string() == USDC_MINT_DEVNET @ ErrorCode::InvalidBidToken
+    )]
+    pub usdc_mint: InterfaceAccount<'info, Mint>,
 
     pub asset: AccountInfo<'info>,
 
@@ -78,8 +85,11 @@ pub fn handle_create_auction(
     let auction_state = &mut ctx.accounts.auction_state;
     auction_state.asset = ctx.accounts.asset.key();
     auction_state.auction_creator = ctx.accounts.payer.key();
+    auction_state.ft_mint = ctx.accounts.ft_mint.key();
+    auction_state.bid_token_mint = ctx.accounts.usdc_mint.key();
     auction_state.is_active = true;
     auction_state.highest_bid = 0;
+    auction_state.highest_bidder = Pubkey::default();
     auction_state.auction_end_time = auction_end_time;
     auction_state.bump = ctx.bumps.auction_state;
 

@@ -10,3 +10,8 @@ pub const SEED_VOTE_ROUND_ACCOUNT: &[u8] = b"vote_round_index";
 
 pub const SEED_AUCTION_VAULT_ACCOUNT: &[u8] = b"auction_vault";
 pub const SEED_AUCTION_STATE_ACCOUNT: &[u8] = b"auction_state";
+
+// USDC mint address (devnet)
+pub const USDC_MINT_DEVNET: &str = "Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr";
+// USDC mint address (mainnet)
+pub const USDC_MINT_MAINNET: &str = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";

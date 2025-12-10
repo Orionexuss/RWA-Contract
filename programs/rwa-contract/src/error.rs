@@ -25,4 +25,16 @@ pub enum ErrorCode {
 
     #[msg("Bid amount must be higher than the current highest bid.")]
     BidTooLow,
+
+    #[msg("The auction is still active and cannot be settled yet.")]
+    AuctionStillActive,
+
+    #[msg("The auction has already been settled.")]
+    AuctionAlreadySettled,
+
+    #[msg("No bids were placed on this auction.")]
+    NoBidsPlaced,
+
+    #[msg("Only USDC is accepted for auction bids.")]
+    InvalidBidToken,
 }
