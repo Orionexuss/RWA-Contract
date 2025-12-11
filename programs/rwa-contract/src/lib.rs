@@ -7,7 +7,7 @@ use anchor_lang::prelude::*;
 pub use constants::*;
 pub use instructions::*;
 
-declare_id!("CBMZzRxxmag85FWsXqgfZMB5xE7fw9hg37WCfrvbQgtU");
+declare_id!("GpRGvAcWMjeg1xiuD4PCbrcZUe1trBktKByd1d2uEhnD");
 
 #[program]
 pub mod rwa_contract {

@@ -15,6 +15,7 @@ pub struct Vote<'info> {
     #[account(mut)]
     pub voter: Signer<'info>,
 
+    /// CHECK:
     pub asset: AccountInfo<'info>,
 
     pub ft_mint: InterfaceAccount<'info, Mint>,

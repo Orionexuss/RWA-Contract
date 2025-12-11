@@ -10,6 +10,7 @@ pub struct CreateVoteRound<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 
+    /// CHECK:
     pub asset: AccountInfo<'info>,
 
     #[account(

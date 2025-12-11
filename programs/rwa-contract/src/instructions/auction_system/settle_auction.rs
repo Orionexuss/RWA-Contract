@@ -12,14 +12,15 @@ pub struct SettleAuction<'info> {
     #[account(mut)]
     pub settler: Signer<'info>,
 
-    /// CHECK: The auction creator account
+    /// CHECK: Auction creator is validated through auction_state has_one constraint
     #[account(mut)]
-    pub auction_creator: UncheckedAccount<'info>,
+    pub auction_creator: AccountInfo<'info>,
 
-    /// CHECK: The highest bidder account
+    /// CHECK: Highest bidder is validated through auction_state has_one constraint
     #[account(mut)]
-    pub highest_bidder: UncheckedAccount<'info>,
+    pub highest_bidder: AccountInfo<'info>,
 
+    /// CHECK: Asset account is validated through auction_state has_one constraint
     pub asset: AccountInfo<'info>,
 
     /// Mint of the tokenized asset being auctioned

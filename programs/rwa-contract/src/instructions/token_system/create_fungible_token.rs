@@ -1,5 +1,9 @@
 use anchor_lang::prelude::*;
-use anchor_spl::{token_2022::spl_token_2022::instruction::AuthorityType, token_interface::{mint_to, set_authority, Mint, MintTo, SetAuthority, TokenInterface}};
+use anchor_spl::{
+    associated_token::AssociatedToken,
+    token_2022::spl_token_2022::instruction::AuthorityType, 
+    token_interface::{mint_to, set_authority, Mint, MintTo, SetAuthority, TokenAccount, TokenInterface}
+};
 
 #[derive(Accounts)]
 #[instruction(decimals: u8)]
@@ -15,15 +19,24 @@ pub struct CreateFungibleToken<'info> {
     )]
     pub mint: InterfaceAccount<'info, Mint>,
 
-    pub system_program: UncheckedAccount<'info>,
-    pub token_program:  Interface<'info, TokenInterface>
+    #[account(
+        init,
+        payer = payer,
+        associated_token::mint = mint,
+        associated_token::authority = payer,
+        associated_token::token_program = token_program,
+    )]
+    pub token_account: InterfaceAccount<'info, TokenAccount>,
 
+    pub system_program: Program<'info, System>,
+    pub token_program: Interface<'info, TokenInterface>,
+    pub associated_token_program: Program<'info, AssociatedToken>,
 }
 
 pub fn create_fungible_token_and_revoke_authority(ctx: Context<CreateFungibleToken>, decimals: u8, supply: u8) -> Result<()> {
     let cpi_accounts = MintTo {
         mint: ctx.accounts.mint.to_account_info(),
-        to: ctx.accounts.payer.to_account_info(),
+        to: ctx.accounts.token_account.to_account_info(),
         authority: ctx.accounts.payer.to_account_info(),
     };
 

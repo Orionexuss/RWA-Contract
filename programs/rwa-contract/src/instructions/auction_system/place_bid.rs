@@ -12,8 +12,10 @@ pub struct PlaceBid<'info> {
     #[account(mut)]
     pub bidder: Signer<'info>,
 
+    /// CHECK: Auction creator is validated through auction_state PDA
     pub auction_creator: AccountInfo<'info>,
 
+    /// CHECK:
     pub asset: AccountInfo<'info>,
 
     /// USDC mint - must match the auction's bid_mint

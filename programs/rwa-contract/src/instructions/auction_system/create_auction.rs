@@ -20,6 +20,7 @@ pub struct CreateAuction<'info> {
     )]
     pub usdc_mint: InterfaceAccount<'info, Mint>,
 
+    /// CHECK: Asset account is validated through asset_state PDA
     pub asset: AccountInfo<'info>,
 
     #[account(

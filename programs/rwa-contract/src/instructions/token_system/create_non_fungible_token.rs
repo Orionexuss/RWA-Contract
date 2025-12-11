@@ -26,6 +26,7 @@ pub struct CreateNonFungibleToken<'info> {
         seeds = [SEED_VAULT_OWNER_ACCOUNT, asset.key().as_ref()],
         bump
     )]
+    /// CHECK:
     pub owner: UncheckedAccount<'info>,
 
     #[account(
@@ -35,6 +36,7 @@ pub struct CreateNonFungibleToken<'info> {
         seeds = [SEED_VAULT_AUTHORITY_ACCOUNT, asset.key().as_ref()],
         bump
     )]
+    /// CHECK:
     pub authority_pda: UncheckedAccount<'info>,
 
     pub ft_mint: InterfaceAccount<'info, Mint>,
@@ -51,7 +53,7 @@ pub struct CreateNonFungibleToken<'info> {
     pub system_program: Program<'info, System>,
 
     #[account(address = MPL_CORE_ID)]
-    // CHECK: this account is checked by the address constraint
+    /// CHECK: this account is checked by the address constraint
     pub mpl_core_program: UncheckedAccount<'info>,
 }
 
