@@ -17,6 +17,7 @@ pub struct CreateNonFungibleToken<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 
+    #[account(mut)]
     pub asset: Signer<'info>,
 
     #[account(
@@ -63,6 +64,21 @@ pub fn handle_create_non_fungible_token(
 ) -> Result<()> {
     let cpi_program = ctx.accounts.mpl_core_program.to_account_info();
 
+    let asset_key = ctx.accounts.asset.key();
+    let owner_bump = ctx.bumps.owner;
+    let authority_bump = ctx.bumps.authority_pda;
+
+    let owner_seeds = &[
+        SEED_VAULT_OWNER_ACCOUNT,
+        asset_key.as_ref(),
+        &[owner_bump],
+    ];
+    let authority_seeds = &[
+        SEED_VAULT_AUTHORITY_ACCOUNT,
+        asset_key.as_ref(),
+        &[authority_bump],
+    ];
+
     CreateV2CpiBuilder::new(&cpi_program)
         .asset(&ctx.accounts.asset.to_account_info())
         .payer(&ctx.accounts.payer.to_account_info())
@@ -71,7 +87,7 @@ pub fn handle_create_non_fungible_token(
         .system_program(&ctx.accounts.system_program.to_account_info())
         .uri(args.uri)
         .name(args.name)
-        .invoke()?;
+        .invoke_signed(&[owner_seeds, authority_seeds])?;
 
     let asset_state = &mut ctx.accounts.asset_state;
     asset_state.asset = ctx.accounts.asset.key();
