@@ -60,10 +60,13 @@ pub fn handle_create_vote_round(ctx: Context<CreateVoteRound>, description: Stri
 
     let vote = &mut ctx.accounts.vote_state;
     vote.description = description;
+    vote.vote_round = ctx.accounts.vote_round_index.vote_round_count;
     vote.voting_creator = ctx.accounts.payer.key();
     vote.asset = ctx.accounts.asset.key();
+    vote.ft_mint = ctx.accounts.ft_mint.key();
     vote.yes_weight = 0;
     vote.no_weight = 0;
+    vote.bump = ctx.bumps.vote_state;
 
     let vote_round_count = ctx.accounts.vote_round_index.vote_round_count;
     let vote_round_index = &mut ctx.accounts.vote_round_index;

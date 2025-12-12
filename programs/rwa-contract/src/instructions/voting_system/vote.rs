@@ -10,6 +10,7 @@ pub enum Choice {
 }
 
 #[derive(Accounts)]
+#[instruction(vote_round_creator: Pubkey, vote_round: u64)]
 pub struct Vote<'info> {
 
     #[account(mut)]
@@ -29,9 +30,10 @@ pub struct Vote<'info> {
     )]
     pub asset_state: Account<'info, AssetState>,
 
+
     #[account(
         mut,
-        seeds = [SEED_VOTE_STATE_ACCOUNT, asset.key().as_ref()],
+        seeds = [SEED_VOTE_STATE_ACCOUNT, asset.key().as_ref(), vote_round_creator.key().as_ref(), vote_round.to_le_bytes().as_ref()],
         bump = vote_state.bump,
         has_one = ft_mint, 
         has_one = asset
@@ -61,7 +63,7 @@ pub struct Vote<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn handle_vote(ctx: Context<Vote>, choice: u8) -> Result<()> {
+pub fn handle_vote(ctx: Context<Vote>, _vote_round_creator: Pubkey, _vote_round: u64, choice: u8) -> Result<()> {
     require!(choice == 0 || choice == 1, ErrorCode::InvalidChoice);
 
     let weight = ctx.accounts.voter_token_account.amount;

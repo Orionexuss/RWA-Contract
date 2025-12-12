@@ -4,6 +4,7 @@ use anchor_lang::prelude::*;
 #[derive(InitSpace)]
 pub struct VoteState {
     pub voting_creator: Pubkey,
+    pub vote_round: u64,
 
     #[max_len(50)]
     pub description: String,
