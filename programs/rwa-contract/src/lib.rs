@@ -37,8 +37,8 @@ pub mod rwa_contract {
         handle_create_vote_round(ctx, description)
     }
 
-    pub fn vote(ctx: Context<Vote>, choice: u8) -> Result<()> {
-        handle_vote(ctx, choice)
+    pub fn vote(ctx: Context<Vote>, vote_round_creator: Pubkey, vote_round: u64, choice: u8) -> Result<()> {
+        handle_vote(ctx, vote_round_creator, vote_round, choice)
     }
 
     pub fn create_auction(
