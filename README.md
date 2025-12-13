@@ -1,6 +1,6 @@
 # Real Estate Tokenization Protocol (Solana)
 
-**This protocol lets you tokenize real estate on Solana using one NFT per property and a fungible token mint that represents fractional ownership.** Holders can transfer fractions, use them as collateral for loans, and participate in on-chain auctions.
+**This protocol lets you tokenize real estate on Solana using one NFT per property and a fungible token mint that represents fractional ownership.** Holders can transfer fractions, participate in on-chain auctions, and vote on proposals using their tokens.
 
 ---
 
@@ -30,42 +30,52 @@ If Alice transfers 5 tokens to Bob → Bob now owns **25%** of the property’s 
 
 ---
 
-## Borrowing Against Your Tokens
+## Voting System
 
-Owners can lock their fractional tokens as collateral and borrow against their value.
+Token holders can participate in governance through an on-chain voting mechanism.
 
-* Deposit tokens → get a loan.
-* Repay loan → unlock tokens.
-* If collateral value falls too much, liquidation may happen.
+* Property owners can create vote rounds with a description.
+* Token holders vote FOR (choice 0) or AGAINST (choice 1) based on their token balance.
+* Each address can vote once per round.
+* Vote weight is proportional to token holdings.
 
 ---
 
 ## English Auctions
 
-Real estate fractions can be sold via a **7‑day English auction**.
+Real estate fractions can be sold via on-chain English auctions.
 
 ### Auction Flow
 
-* The property owner (e.g., Alice) starts the auction.
+* The property owner (e.g., Alice) starts the auction with a specified end time.
 * The contract **locks her fractional tokens**.
-* Anyone can bid, each bid must be higher than the last.
-* All bidders except the current highest bidder may withdraw their bids.
-* After 7 days, anyone can finalize the auction.
+* Anyone can bid using USDC, each bid must be higher than the last.
+* After the auction end time, anyone can settle the auction.
 
   * Highest bidder receives the tokens.
-  * Alice receives the winning bid amount.
+  * Alice receives the winning bid amount in USDC.
 
 ---
 
-## Purpose
+## Current Features
 
 This protocol makes real estate:
 
-* Fractional
-* Tradable
-* Collateralizable
-* Auctionable
+* **Fractional** – Divide property ownership into fungible tokens
+* **Tradable** – Transfer ownership through token transfers
+* **Governable** – Vote on proposals using token-weighted voting
+* **Auctionable** – Sell fractions via on-chain English auctions
 * Fully managed on Solana
+
+---
+
+## Future Enhancements
+
+Potential features that could be added in future versions:
+
+* **Lending Protocol** – Use fractional tokens as collateral for loans
+* **Advanced Auction Types** – Dutch auctions, sealed-bid auctions
+* **Dividend Distribution** – Automatic rental income distribution to token holders
 
 ---
 
