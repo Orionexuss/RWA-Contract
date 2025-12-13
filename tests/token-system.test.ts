@@ -53,7 +53,6 @@ describe("Token System", () => {
     before(async () => {
       // Create a fungible token to associate with the NFT
       ftMintKeypair = Keypair.generate();
-      console.log(`ft mint: ${ftMintKeypair?.publicKey.toBase58()}`);
 
       await program.methods
         .createFungibleToken(6, 100)
@@ -72,8 +71,6 @@ describe("Token System", () => {
         name: "Property NFT",
         uri: "https://example.com/nft-metadata.json",
       };
-        console.log(`wallet payer : ${wallet.payer}`);
-        console.log(assetKeypair.publicKey.toBase58());
 
       await program.methods
         .createNonFungibleToken(args)
