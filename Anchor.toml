@@ -6,13 +6,13 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-rwa_contract = "CBMZzRxxmag85FWsXqgfZMB5xE7fw9hg37WCfrvbQgtU"
+rwa_contract = "CGMajQiWM267gZZDoG4UgGUHLYuBWjyYBqjKT9q53USh"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"
+cluster = "devnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
