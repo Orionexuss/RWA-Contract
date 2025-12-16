@@ -51,21 +51,35 @@ pub struct SettleAuction<'info> {
     )]
     pub asset_state: Account<'info, AssetState>,
 
-    // Vault holding the asset tokens being auctioned (owned by auction creator)
+    /// CHECK: PDA authority for auction vault
+    #[account(
+        seeds = [SEED_AUCTION_VAULT_ACCOUNT, auction_creator.key().as_ref()],
+        bump
+    )]
+    pub auction_vault_pda: UncheckedAccount<'info>,
+
+    // Vault holding the asset tokens being auctioned (self-custodied)
     #[account(
         mut,
         token::mint = ft_mint,
-        token::authority = auction_creator,
+        token::authority = auction_vault_pda,
         seeds = [SEED_AUCTION_VAULT_ACCOUNT, auction_creator.key().as_ref()],
         bump
     )]
     pub auction_vault: InterfaceAccount<'info, TokenAccount>,
 
+    /// CHECK: PDA authority for bids vault
+    #[account(
+        seeds = [SEED_AUCTION_STATE_ACCOUNT, auction_creator.key().as_ref()],
+        bump
+    )]
+    pub auction_state_pda: UncheckedAccount<'info>,
+
     // Vault holding the USDC bids (owned by auction_state PDA)
     #[account(
         mut,
         token::mint = usdc_mint,
-        token::authority = auction_state,
+        token::authority = auction_state_pda,
     )]
     pub bids_vault: InterfaceAccount<'info, TokenAccount>,
 
@@ -125,7 +139,7 @@ pub fn handle_settle_auction(ctx: Context<SettleAuction>) -> Result<()> {
     let transfer_bid_accounts = TransferChecked {
         from: ctx.accounts.bids_vault.to_account_info(),
         to: ctx.accounts.auction_creator_usdc_account.to_account_info(),
-        authority: ctx.accounts.auction_state.to_account_info(),
+        authority: ctx.accounts.auction_state_pda.to_account_info(),
         mint: ctx.accounts.usdc_mint.to_account_info(),
     };
 
@@ -137,17 +151,26 @@ pub fn handle_settle_auction(ctx: Context<SettleAuction>) -> Result<()> {
 
     transfer_checked(transfer_bid_ctx, highest_bid_amount, usdc_decimals)?;
 
+    // Generate signer seeds for the auction_vault PDA
+    let vault_seeds = &[
+        SEED_AUCTION_VAULT_ACCOUNT,
+        auction_creator_key.as_ref(),
+        &[ctx.bumps.auction_vault_pda],
+    ];
+    let vault_signer_seeds = &[&vault_seeds[..]];
+
     // Transfer the auctioned asset tokens from auction_vault to highest bidder
     let transfer_tokens_accounts = TransferChecked {
         from: ctx.accounts.auction_vault.to_account_info(),
         to: ctx.accounts.highest_bidder_asset_account.to_account_info(),
-        authority: ctx.accounts.auction_creator.to_account_info(),
+        authority: ctx.accounts.auction_vault_pda.to_account_info(),
         mint: ctx.accounts.ft_mint.to_account_info(),
     };
 
-    let transfer_tokens_ctx = CpiContext::new(
+    let transfer_tokens_ctx = CpiContext::new_with_signer(
         ctx.accounts.token_program.to_account_info(),
         transfer_tokens_accounts,
+        vault_signer_seeds,
     );
 
     let auction_vault_amount = ctx.accounts.auction_vault.amount;

@@ -22,10 +22,19 @@ pub struct PlaceBid<'info> {
     pub usdc_mint: InterfaceAccount<'info, Mint>,
 
     #[account(
-        token::mint = usdc_mint.key(),
-        token::authority = bidder.key()
+        mut,
+        associated_token::mint = usdc_mint.key(),
+        associated_token::authority = bidder.key(),
+        associated_token::token_program = token_program,
     )]
     pub bidder_usdc_account: InterfaceAccount<'info, TokenAccount>,
+
+    /// CHECK: This PDA serves as authority for the bids vault
+    #[account(
+        seeds = [SEED_AUCTION_STATE_ACCOUNT, auction_creator.key().as_ref()],
+        bump
+    )]
+    pub auction_state_pda: UncheckedAccount<'info>,
 
     #[account(
         mut,
@@ -48,8 +57,8 @@ pub struct PlaceBid<'info> {
         init_if_needed,
         payer = bidder,
         associated_token::mint = usdc_mint,
-        associated_token::authority = auction_state
-        
+        associated_token::authority = auction_state_pda,
+        associated_token::token_program = token_program
     )]
     pub bids_vault: InterfaceAccount<'info, TokenAccount>,
 
