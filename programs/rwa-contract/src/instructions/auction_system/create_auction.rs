@@ -32,6 +32,7 @@ pub struct CreateAuction<'info> {
     pub asset_state: Account<'info, AssetState>,
 
     #[account(
+        mut,
         token::mint = ft_mint.key(),
         token::authority = payer.key(),
     )]
@@ -41,7 +42,7 @@ pub struct CreateAuction<'info> {
         init,
         payer = payer,
         token::mint = ft_mint,
-        token::authority = token_account,
+        token::authority = auction_vault,
         token::token_program = token_program,
         seeds = [SEED_AUCTION_VAULT_ACCOUNT, payer.key().as_ref()],
         bump
