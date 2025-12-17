@@ -12,21 +12,19 @@ Each real estate asset is represented by a single NFT that contains the core met
 
 ![Image 1](https://github.com/user-attachments/assets/5236e02e-aa8b-4cea-9fa3-1b9e3562fa48)
 
-
 ---
 
 ## Fractional Ownership
 
 When a property is tokenized:
 
-* One NFT is minted (the property itself).
-* A fungible token mint is created representing economic rights.
-* Example: Supply of **20 tokens**, each one equals **5%** ownership.
+- One NFT is minted (the property itself).
+- A fungible token mint is created representing economic rights.
+- Example: Supply of **20 tokens**, each one equals **5%** ownership.
 
 If Alice transfers 5 tokens to Bob → Bob now owns **25%** of the property’s economic rights.
 
 ![Image 2](https://github.com/user-attachments/assets/fe67d7d7-26d6-43fe-a5cf-0a3f964d7d00)
-
 
 ---
 
@@ -34,10 +32,10 @@ If Alice transfers 5 tokens to Bob → Bob now owns **25%** of the property’s 
 
 Token holders can participate in governance through an on-chain voting mechanism.
 
-* Property owners can create vote rounds with a description.
-* Token holders vote FOR (choice 0) or AGAINST (choice 1) based on their token balance.
-* Each address can vote once per round.
-* Vote weight is proportional to token holdings.
+- Property owners can create vote rounds with a description.
+- Token holders vote FOR (choice 0) or AGAINST (choice 1) based on their token balance.
+- Each address can vote once per round.
+- Vote weight is proportional to token holdings.
 
 ---
 
@@ -47,13 +45,13 @@ Real estate fractions can be sold via on-chain English auctions.
 
 ### Auction Flow
 
-* The property owner (e.g., Alice) starts the auction with a specified end time.
-* The contract **locks her fractional tokens**.
-* Anyone can bid using USDC, each bid must be higher than the last.
-* After the auction end time, anyone can settle the auction.
+- The property owner (e.g., Alice) starts the auction with a specified end time.
+- The contract **locks her fractional tokens**.
+- Anyone can bid using USDC, each bid must be higher than the last.
+- After the auction end time, anyone can settle the auction.
 
-  * Highest bidder receives the tokens.
-  * Alice receives the winning bid amount in USDC.
+  - Highest bidder receives the tokens.
+  - Alice receives the winning bid amount in USDC.
 
 ---
 
@@ -61,11 +59,11 @@ Real estate fractions can be sold via on-chain English auctions.
 
 This protocol makes real estate:
 
-* **Fractional** – Divide property ownership into fungible tokens
-* **Tradable** – Transfer ownership through token transfers
-* **Governable** – Vote on proposals using token-weighted voting
-* **Auctionable** – Sell fractions via on-chain English auctions
-* Fully managed on Solana
+- **Fractional** – Divide property ownership into fungible tokens
+- **Tradable** – Transfer ownership through token transfers
+- **Governable** – Vote on proposals using token-weighted voting
+- **Auctionable** – Sell fractions via on-chain English auctions
+- Fully managed on Solana
 
 ---
 
@@ -73,18 +71,12 @@ This protocol makes real estate:
 
 Potential features that could be added in future versions:
 
-* **Lending Protocol** – Use fractional tokens as collateral for loans
-* **Advanced Auction Types** – Dutch auctions, sealed-bid auctions
-* **Dividend Distribution** – Automatic rental income distribution to token holders
+- **Lending Protocol** – Use fractional tokens as collateral for loans
+- **Advanced Auction Types** – Dutch auctions, sealed-bid auctions
+- **Dividend Distribution** – Automatic rental income distribution to token holders
 
 ---
 
 ## Note
 
-The blockchain only manages *digital ownership*. Legal rights over real-world property must be handled through off-chain agreements.
-
----
-
-## Development Status
-
-This protocol is **still under active development**, and features or behavior may change as the project evolves.
+The blockchain only manages _digital ownership_. Legal rights over real-world property must be handled through off-chain agreements.

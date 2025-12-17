@@ -98,6 +98,7 @@ pub fn handle_settle_auction(ctx: Context<SettleAuction>) -> Result<()> {
     let clock = Clock::get()?;
     let auction_state = &mut ctx.accounts.auction_state;
 
+    // Manual validation to reduce stack usage from Anchor constraints
     require_keys_eq!(
         auction_state.auction_creator,
         ctx.accounts.auction_creator.key(),
