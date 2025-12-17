@@ -3,7 +3,6 @@ import { Program, BN } from "@coral-xyz/anchor";
 import { RwaContract } from "../target/types/rwa_contract";
 import { PublicKey, Keypair, SystemProgram } from "@solana/web3.js";
 import {
-  TOKEN_2022_PROGRAM_ID,
   getAssociatedTokenAddressSync,
   ASSOCIATED_TOKEN_PROGRAM_ID,
   getAccount,
@@ -96,7 +95,7 @@ describe("Auction System Tests", () => {
       ftMintKeypair.publicKey,
       auctionCreator.publicKey,
       false,
-      TOKEN_2022_PROGRAM_ID,
+      TOKEN_PROGRAM_ID,
       ASSOCIATED_TOKEN_PROGRAM_ID
     );
 
@@ -107,7 +106,7 @@ describe("Auction System Tests", () => {
         mint: ftMintKeypair.publicKey,
         tokenAccount: auctionCreatorTokenAccount,
         systemProgram: SystemProgram.programId,
-        tokenProgram: TOKEN_2022_PROGRAM_ID,
+        tokenProgram: TOKEN_PROGRAM_ID,
         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
       })
       .signers([ftMintKeypair, auctionCreator])
@@ -266,7 +265,7 @@ describe("Auction System Tests", () => {
           tokenAccount: auctionCreatorTokenAccount,
           auctionState: auctionStatePda,
           auctionVault: auctionVaultPda,
-          tokenProgram: TOKEN_2022_PROGRAM_ID,
+          tokenProgram: TOKEN_PROGRAM_ID,
         })
         .signers([auctionCreator])
         .rpc();
@@ -288,7 +287,7 @@ describe("Auction System Tests", () => {
         provider.connection,
         auctionVaultPda,
         undefined,
-        TOKEN_2022_PROGRAM_ID
+        TOKEN_PROGRAM_ID
       );
       assert.equal(vaultAccount.amount.toString(), auctionAmount.toString());
     });
@@ -313,7 +312,7 @@ describe("Auction System Tests", () => {
         ftMintKeypair.publicKey,
         newAuctionCreator.publicKey,
         false,
-        TOKEN_2022_PROGRAM_ID
+        TOKEN_PROGRAM_ID
       );
 
       const [newAuctionState] = PublicKey.findProgramAddressSync(
@@ -338,7 +337,7 @@ describe("Auction System Tests", () => {
             tokenAccount: newTokenAccount,
             auctionState: newAuctionState,
             auctionVault: newAuctionVault,
-            tokenProgram: TOKEN_2022_PROGRAM_ID,
+            tokenProgram: TOKEN_PROGRAM_ID,
           })
           .signers([newAuctionCreator])
           .rpc();
@@ -493,7 +492,7 @@ describe("Auction System Tests", () => {
         ftMintKeypair.publicKey,
         bidder2.publicKey,
         false,
-        TOKEN_2022_PROGRAM_ID
+        TOKEN_PROGRAM_ID
       );
 
       try {
@@ -514,7 +513,7 @@ describe("Auction System Tests", () => {
             bidsVault: bidsVaultPda,
             auctionCreatorUsdcAccount: auctionCreatorUsdcAccount,
             highestBidderAssetAccount: highestBidderAssetAccount,
-            tokenProgram: TOKEN_2022_PROGRAM_ID,
+            tokenProgram: TOKEN_PROGRAM_ID,
           })
           .rpc();
 
@@ -527,50 +526,193 @@ describe("Auction System Tests", () => {
     });
 
     it("Successfully settles auction after end time", async () => {
-      // // Create a new auction with very short duration
-      // const newAuctionCreator = Keypair.generate();
-      // // Transfer SOL from wallet instead of airdrop
-      // const tx = new anchor.web3.Transaction().add(
-      //   anchor.web3.SystemProgram.transfer({
-      //     fromPubkey: wallet.publicKey,
-      //     toPubkey: newAuctionCreator.publicKey,
-      //     lamports: 0.01 * anchor.web3.LAMPORTS_PER_SOL,
-      //   })
-      // );
-      // await provider.sendAndConfirm(tx);
-      //
-      // // Create token account and mint tokens
-      // const newCreatorTokenAccount = getAssociatedTokenAddressSync(
-      //   ftMintKeypair.publicKey,
-      //   newAuctionCreator.publicKey,
-      //   false,
-      //   TOKEN_2022_PROGRAM_ID
-      // );
-      //
-      // // We need to transfer tokens to the new creator
-      // const [newAuctionState] = PublicKey.findProgramAddressSync(
-      //   [Buffer.from("auction_state"), newAuctionCreator.publicKey.toBuffer()],
-      //   program.programId
-      // );
-      //
-      //   [Buffer.from("auction_vault"), newAuctionCreator.publicKey.toBuffer()],
-      //   program.programId
-      // );
-      //
-      // const newBidsVault = getAssociatedTokenAddressSync(
-      //   usdcMint,
-      //   newAuctionState,
-      //   true,
-      //   TOKEN_PROGRAM_ID
-      // );
-      //
-      // // For simplicity, let's use a past timestamp for immediate settlement
-      // const pastEndTime = new BN(Math.floor(Date.now() / 1000) - 10);
-      // const auctionAmount = new BN(100_000_000);
-      //
-      // // Note: This will fail in actual test since we can't create auction with past time
-      // // In a real scenario, you'd need to wait or use time manipulation
-      // console.log("Settlement test requires waiting for auction to end or using a test validator with time manipulation");
+      // Create a new short-duration auction
+      const shortAuctionCreator = Keypair.generate();
+      const shortAsset = Keypair.generate();
+      const shortFtMint = Keypair.generate();
+      
+      // Fund the new auction creator
+      const fundTx = new anchor.web3.Transaction().add(
+        anchor.web3.SystemProgram.transfer({
+          fromPubkey: wallet.publicKey,
+          toPubkey: shortAuctionCreator.publicKey,
+          lamports: 0.1 * anchor.web3.LAMPORTS_PER_SOL,
+        })
+      );
+      await provider.sendAndConfirm(fundTx);
+
+      // Create asset state PDA
+      const [shortAssetState] = PublicKey.findProgramAddressSync(
+        [Buffer.from("asset_state"), shortAsset.publicKey.toBuffer()],
+        program.programId
+      );
+
+      // Create token account
+      const shortTokenAccount = getAssociatedTokenAddressSync(
+        shortFtMint.publicKey,
+        shortAuctionCreator.publicKey,
+        false,
+        TOKEN_PROGRAM_ID
+      );
+
+      // Create FT
+      await program.methods
+        .createFungibleToken(6, 3)
+        .accountsPartial({
+          payer: shortAuctionCreator.publicKey,
+          mint: shortFtMint.publicKey,
+          tokenAccount: shortTokenAccount,
+          systemProgram: SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+        })
+        .signers([shortFtMint, shortAuctionCreator])
+        .rpc();
+
+      // Create NFT
+      await program.methods
+        .createNonFungibleToken({
+          name: "Short Auction NFT",
+          uri: "https://example.com/short-auction.json",
+        })
+        .accountsPartial({
+          payer: shortAuctionCreator.publicKey,
+          asset: shortAsset.publicKey,
+          ftMint: shortFtMint.publicKey,
+        })
+        .signers([shortAsset, shortAuctionCreator])
+        .rpc();
+
+      // Derive auction PDAs
+      const [shortAuctionState] = PublicKey.findProgramAddressSync(
+        [Buffer.from("auction_state"), shortAuctionCreator.publicKey.toBuffer()],
+        program.programId
+      );
+
+      const [shortAuctionVault] = PublicKey.findProgramAddressSync(
+        [Buffer.from("auction_vault"), shortAuctionCreator.publicKey.toBuffer()],
+        program.programId
+      );
+
+      const shortBidsVault = getAssociatedTokenAddressSync(
+        usdcMint,
+        shortAuctionState,
+        true,
+        TOKEN_PROGRAM_ID
+      );
+
+      // Create auction with 10 second duration to account for devnet latency
+      const shortEndTime = new BN(Math.floor(Date.now() / 1000) + 10);
+      const shortAmount = new BN(1_000_000);
+
+      await program.methods
+        .createAuction(shortAmount, shortEndTime)
+        .accountsPartial({
+          payer: shortAuctionCreator.publicKey,
+          ftMint: shortFtMint.publicKey,
+          usdcMint: usdcMint,
+          asset: shortAsset.publicKey,
+          assetState: shortAssetState,
+          tokenAccount: shortTokenAccount,
+          auctionState: shortAuctionState,
+          auctionVault: shortAuctionVault,
+          tokenProgram: TOKEN_PROGRAM_ID,
+        })
+        .signers([shortAuctionCreator])
+        .rpc();
+
+      // Place a bid
+      await program.methods
+        .placeBid(new BN(500_000))
+        .accountsPartial({
+          bidder: bidder1.publicKey,
+          auctionCreator: shortAuctionCreator.publicKey,
+          asset: shortAsset.publicKey,
+          usdcMint: usdcMint,
+          bidderUsdcAccount: bidder1UsdcAccount,
+          auctionStatePda: shortAuctionState,
+          auctionState: shortAuctionState,
+          assetState: shortAssetState,
+          bidsVault: shortBidsVault,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+        })
+        .signers([bidder1])
+        .rpc();
+
+      // Wait for auction to end
+      console.log("Waiting 12 seconds for auction to end...");
+      await new Promise(resolve => setTimeout(resolve, 12000));
+
+      // Associated token accounts will be created automatically by init_if_needed
+      // Pass TOKEN_PROGRAM_ID which is backward compatible with TOKEN_PROGRAM
+      const shortCreatorUsdcAccount = getAssociatedTokenAddressSync(
+        usdcMint,
+        shortAuctionCreator.publicKey,
+        false,
+        TOKEN_PROGRAM_ID
+      );
+
+      const bidder1AssetAccount = getAssociatedTokenAddressSync(
+        shortFtMint.publicKey,
+        bidder1.publicKey,
+        false,
+        TOKEN_PROGRAM_ID
+      );
+
+      // Settle the auction
+      try {
+        await program.methods
+          .settleAuction()
+          .accountsPartial({
+            settler: wallet.publicKey,
+            auctionCreator: shortAuctionCreator.publicKey,
+            highestBidder: bidder1.publicKey,
+            asset: shortAsset.publicKey,
+            ftMint: shortFtMint.publicKey,
+            usdcMint: usdcMint,
+            auctionState: shortAuctionState,
+            assetState: shortAssetState,
+            auctionVaultPda: shortAuctionVault,
+            auctionVault: shortAuctionVault,
+            auctionStatePda: shortAuctionState,
+            bidsVault: shortBidsVault,
+            auctionCreatorUsdcAccount: shortCreatorUsdcAccount,
+            highestBidderAssetAccount: bidder1AssetAccount,
+            systemProgram: SystemProgram.programId,
+            tokenProgram: TOKEN_PROGRAM_ID,
+            associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+          })
+          .rpc();
+      } catch (error) {
+        console.error("Settlement error:", error);
+        if (error.logs) {
+          console.error("Transaction logs:", error.logs);
+        }
+        throw error;
+      }
+
+      // Verify settlement
+      const settledAuction = await program.account.auctionState.fetch(shortAuctionState);
+      assert.isFalse(settledAuction.isActive);
+
+      // Verify auction creator received USDC
+      const creatorUsdcBalance = await getAccount(
+        provider.connection,
+        shortCreatorUsdcAccount,
+        undefined,
+        TOKEN_PROGRAM_ID
+      );
+      assert.equal(creatorUsdcBalance.amount.toString(), "500000");
+
+      // Verify bidder received asset tokens
+      const bidderAssetBalance = await getAccount(
+        provider.connection,
+        bidder1AssetAccount,
+        undefined,
+        TOKEN_PROGRAM_ID
+      );
+      assert.equal(bidderAssetBalance.amount.toString(), shortAmount.toString());
     });
   });
 });
