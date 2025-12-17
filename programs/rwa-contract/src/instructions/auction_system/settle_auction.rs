@@ -1,4 +1,5 @@
 use anchor_lang::prelude::*;
+use anchor_spl::associated_token::AssociatedToken;
 use anchor_spl::token_interface::{
     transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked,
 };
@@ -31,25 +32,16 @@ pub struct SettleAuction<'info> {
 
     #[account(
         mut,
-        has_one = auction_creator,
-        has_one = ft_mint,
-        has_one = asset,
-        has_one = highest_bidder,
-        constraint = ft_mint.key() == auction_state.ft_mint @ ErrorCode::InvalidChoice,
-        constraint = usdc_mint.key() == auction_state.bid_token_mint @ ErrorCode::InvalidBidToken,
         seeds = [SEED_AUCTION_STATE_ACCOUNT, auction_creator.key().as_ref()],
-        bump = auction_state.bump
+        bump
     )]
-    pub auction_state: Account<'info, AuctionState>,
+    pub auction_state: Box<Account<'info, AuctionState>>,
 
     #[account(
-        has_one = asset,
-        has_one = ft_mint,
-        constraint = asset_state.ft_mint == ft_mint.key() @ ErrorCode::InvalidChoice,
         seeds = [SEED_STATE_ACCOUNT, asset.key().as_ref()],
-        bump = asset_state.bump,
+        bump
     )]
-    pub asset_state: Account<'info, AssetState>,
+    pub asset_state: Box<Account<'info, AssetState>>,
 
     /// CHECK: PDA authority for auction vault
     #[account(
@@ -61,8 +53,6 @@ pub struct SettleAuction<'info> {
     // Vault holding the asset tokens being auctioned (self-custodied)
     #[account(
         mut,
-        token::mint = ft_mint,
-        token::authority = auction_vault_pda,
         seeds = [SEED_AUCTION_VAULT_ACCOUNT, auction_creator.key().as_ref()],
         bump
     )]
@@ -76,19 +66,16 @@ pub struct SettleAuction<'info> {
     pub auction_state_pda: UncheckedAccount<'info>,
 
     // Vault holding the USDC bids (owned by auction_state PDA)
-    #[account(
-        mut,
-        token::mint = usdc_mint,
-        token::authority = auction_state_pda,
-    )]
+    #[account(mut)]
     pub bids_vault: InterfaceAccount<'info, TokenAccount>,
 
     // Auction creator's USDC account to receive the winning bid
     #[account(
         init_if_needed,
         payer = settler,
-        token::mint = usdc_mint,
-        token::authority = auction_creator,
+        associated_token::mint = usdc_mint,
+        associated_token::authority = auction_creator,
+        associated_token::token_program = token_program,
     )]
     pub auction_creator_usdc_account: InterfaceAccount<'info, TokenAccount>,
 
@@ -96,18 +83,66 @@ pub struct SettleAuction<'info> {
     #[account(
         init_if_needed,
         payer = settler,
-        token::mint = ft_mint,
-        token::authority = highest_bidder,
+        associated_token::mint = ft_mint,
+        associated_token::authority = highest_bidder,
+        associated_token::token_program = token_program,
     )]
     pub highest_bidder_asset_account: InterfaceAccount<'info, TokenAccount>,
 
     pub system_program: Program<'info, System>,
     pub token_program: Interface<'info, TokenInterface>,
+    pub associated_token_program: Program<'info, AssociatedToken>,
 }
 
 pub fn handle_settle_auction(ctx: Context<SettleAuction>) -> Result<()> {
     let clock = Clock::get()?;
     let auction_state = &mut ctx.accounts.auction_state;
+
+    require_keys_eq!(
+        auction_state.auction_creator,
+        ctx.accounts.auction_creator.key(),
+        ErrorCode::InvalidAuctionCreator
+    );
+    require_keys_eq!(
+        auction_state.ft_mint,
+        ctx.accounts.ft_mint.key(),
+        ErrorCode::InvalidMint
+    );
+    require_keys_eq!(
+        auction_state.asset,
+        ctx.accounts.asset.key(),
+        ErrorCode::InvalidAsset
+    );
+    require_keys_eq!(
+        auction_state.highest_bidder,
+        ctx.accounts.highest_bidder.key(),
+        ErrorCode::InvalidBidder
+    );
+    require_keys_eq!(
+        auction_state.bid_token_mint,
+        ctx.accounts.usdc_mint.key(),
+        ErrorCode::InvalidBidToken
+    );
+    require_keys_eq!(
+        ctx.accounts.asset_state.asset,
+        ctx.accounts.asset.key(),
+        ErrorCode::InvalidAsset
+    );
+    require_keys_eq!(
+        ctx.accounts.asset_state.ft_mint,
+        ctx.accounts.ft_mint.key(),
+        ErrorCode::InvalidMint
+    );
+    require_keys_eq!(
+        ctx.accounts.auction_vault.mint,
+        ctx.accounts.ft_mint.key(),
+        ErrorCode::InvalidMint
+    );
+    require_keys_eq!(
+        ctx.accounts.bids_vault.mint,
+        ctx.accounts.usdc_mint.key(),
+        ErrorCode::InvalidBidToken
+    );
 
     // Ensure auction has ended
     require!(

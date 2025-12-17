@@ -37,4 +37,16 @@ pub enum ErrorCode {
 
     #[msg("Only USDC is accepted for auction bids.")]
     InvalidBidToken,
+
+    #[msg("Invalid auction creator account.")]
+    InvalidAuctionCreator,
+
+    #[msg("Invalid auction asset account.")]
+    InvalidAsset,
+
+    #[msg("Invalid fungible token mint.")]
+    InvalidMint,
+
+    #[msg("Invalid highest bidder account.")]
+    InvalidBidder,
 }
