@@ -49,4 +49,7 @@ pub enum ErrorCode {
 
     #[msg("Invalid highest bidder account.")]
     InvalidBidder,
+
+    #[msg("Address too long")]
+    AddressTooLong,
 }

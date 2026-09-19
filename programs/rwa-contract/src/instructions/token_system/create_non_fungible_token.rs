@@ -8,7 +8,7 @@ use crate::{SEED_STATE_ACCOUNT, SEED_VAULT_AUTHORITY_ACCOUNT, SEED_VAULT_OWNER_A
 
 #[derive(AnchorDeserialize, AnchorSerialize)]
 pub struct CreateAssetArgs {
-    pub name: String,
+    pub address: String,
     pub uri: String,
 }
 
@@ -62,17 +62,19 @@ pub fn handle_create_non_fungible_token(
     ctx: Context<CreateNonFungibleToken>,
     args: CreateAssetArgs,
 ) -> Result<()> {
+    // Validate address length (max 40 characters)
+    require!(
+        args.address.len() <= 40,
+        crate::error::ErrorCode::AddressTooLong
+    );
+
     let cpi_program = ctx.accounts.mpl_core_program.to_account_info();
 
     let asset_key = ctx.accounts.asset.key();
     let owner_bump = ctx.bumps.owner;
     let authority_bump = ctx.bumps.authority_pda;
 
-    let owner_seeds = &[
-        SEED_VAULT_OWNER_ACCOUNT,
-        asset_key.as_ref(),
-        &[owner_bump],
-    ];
+    let owner_seeds = &[SEED_VAULT_OWNER_ACCOUNT, asset_key.as_ref(), &[owner_bump]];
     let authority_seeds = &[
         SEED_VAULT_AUTHORITY_ACCOUNT,
         asset_key.as_ref(),
@@ -86,7 +88,7 @@ pub fn handle_create_non_fungible_token(
         .authority(Some(&ctx.accounts.authority_pda.to_account_info()))
         .system_program(&ctx.accounts.system_program.to_account_info())
         .uri(args.uri)
-        .name(args.name)
+        .name(args.address)
         .invoke_signed(&[owner_seeds, authority_seeds])?;
 
     let asset_state = &mut ctx.accounts.asset_state;

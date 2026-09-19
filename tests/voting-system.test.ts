@@ -69,7 +69,7 @@ describe("Voting System Tests", () => {
 
     // Create NFT to establish asset state (required for voting)
     const args = {
-      name: "Voting Property NFT",
+      address: "Voting Property NFT",
       uri: "https://example.com/voting-nft.json",
     };
 
