@@ -44,7 +44,7 @@ pub struct CreateAuction<'info> {
         token::mint = ft_mint,
         token::authority = auction_vault,
         token::token_program = token_program,
-        seeds = [SEED_AUCTION_VAULT_ACCOUNT, payer.key().as_ref()],
+        seeds = [SEED_AUCTION_VAULT_ACCOUNT, payer.key().as_ref(), asset.key().as_ref()],
         bump
     )]
     pub auction_vault: InterfaceAccount<'info, TokenAccount>,
@@ -53,7 +53,7 @@ pub struct CreateAuction<'info> {
         init,
         payer = payer,
         space = 8 + AuctionState::INIT_SPACE,
-        seeds = [SEED_AUCTION_STATE_ACCOUNT, payer.key().as_ref()],
+        seeds = [SEED_AUCTION_STATE_ACCOUNT, payer.key().as_ref(), asset.key().as_ref()],
         bump
     )]
     pub auction_state: Account<'info, AuctionState>,

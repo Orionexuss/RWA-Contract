@@ -31,7 +31,7 @@ pub struct PlaceBid<'info> {
 
     /// CHECK: This PDA serves as authority for the bids vault
     #[account(
-        seeds = [SEED_AUCTION_STATE_ACCOUNT, auction_creator.key().as_ref()],
+        seeds = [SEED_AUCTION_STATE_ACCOUNT, auction_creator.key().as_ref(), asset.key().as_ref()],
         bump
     )]
     pub auction_state_pda: UncheckedAccount<'info>,
@@ -41,7 +41,7 @@ pub struct PlaceBid<'info> {
         has_one = auction_creator,
         has_one = asset,
         constraint = auction_state.bid_token_mint == usdc_mint.key() @ ErrorCode::InvalidBidToken,
-        seeds = [SEED_AUCTION_STATE_ACCOUNT, auction_creator.key().as_ref()],
+        seeds = [SEED_AUCTION_STATE_ACCOUNT, auction_creator.key().as_ref(), asset.key().as_ref()],
         bump = auction_state.bump
         )]
     pub auction_state: Account<'info, AuctionState>,

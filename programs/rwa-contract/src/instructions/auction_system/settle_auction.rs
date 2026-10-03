@@ -32,7 +32,7 @@ pub struct SettleAuction<'info> {
 
     #[account(
         mut,
-        seeds = [SEED_AUCTION_STATE_ACCOUNT, auction_creator.key().as_ref()],
+        seeds = [SEED_AUCTION_STATE_ACCOUNT, auction_creator.key().as_ref(), asset.key().as_ref()],
         bump
     )]
     pub auction_state: Box<Account<'info, AuctionState>>,
@@ -45,7 +45,7 @@ pub struct SettleAuction<'info> {
 
     /// CHECK: PDA authority for auction vault
     #[account(
-        seeds = [SEED_AUCTION_VAULT_ACCOUNT, auction_creator.key().as_ref()],
+        seeds = [SEED_AUCTION_VAULT_ACCOUNT, auction_creator.key().as_ref(), asset.key().as_ref()],
         bump
     )]
     pub auction_vault_pda: UncheckedAccount<'info>,
@@ -53,14 +53,14 @@ pub struct SettleAuction<'info> {
     // Vault holding the asset tokens being auctioned (self-custodied)
     #[account(
         mut,
-        seeds = [SEED_AUCTION_VAULT_ACCOUNT, auction_creator.key().as_ref()],
+        seeds = [SEED_AUCTION_VAULT_ACCOUNT, auction_creator.key().as_ref(), asset.key().as_ref()],
         bump
     )]
     pub auction_vault: InterfaceAccount<'info, TokenAccount>,
 
     /// CHECK: PDA authority for bids vault
     #[account(
-        seeds = [SEED_AUCTION_STATE_ACCOUNT, auction_creator.key().as_ref()],
+        seeds = [SEED_AUCTION_STATE_ACCOUNT, auction_creator.key().as_ref(), asset.key().as_ref()],
         bump
     )]
     pub auction_state_pda: UncheckedAccount<'info>,

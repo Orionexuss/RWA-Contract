@@ -37,7 +37,12 @@ pub mod rwa_contract {
         handle_create_vote_round(ctx, description)
     }
 
-    pub fn vote(ctx: Context<Vote>, vote_round_creator: Pubkey, vote_round: u64, choice: u8) -> Result<()> {
+    pub fn vote(
+        ctx: Context<Vote>,
+        vote_round_creator: Pubkey,
+        vote_round: u64,
+        choice: u8,
+    ) -> Result<()> {
         handle_vote(ctx, vote_round_creator, vote_round, choice)
     }
 
@@ -55,5 +60,9 @@ pub mod rwa_contract {
 
     pub fn settle_auction(ctx: Context<SettleAuction>) -> Result<()> {
         handle_settle_auction(ctx)
+    }
+
+    pub fn settle_auction_without_bids(ctx: Context<SettleAuctionWithoutBids>) -> Result<()> {
+        handle_settle_auction_without_bids(ctx)
     }
 }

@@ -32,6 +32,9 @@ pub enum ErrorCode {
     #[msg("The auction has already been settled.")]
     AuctionAlreadySettled,
 
+    #[msg("This auction has bids and must use regular settlement.")]
+    BidsAlreadyPlaced,
+
     #[msg("No bids were placed on this auction.")]
     NoBidsPlaced,
 
