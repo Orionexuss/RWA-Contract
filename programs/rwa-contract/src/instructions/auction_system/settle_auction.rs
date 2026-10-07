@@ -33,7 +33,8 @@ pub struct SettleAuction<'info> {
     #[account(
         mut,
         seeds = [SEED_AUCTION_STATE_ACCOUNT, auction_creator.key().as_ref(), asset.key().as_ref()],
-        bump
+        bump,
+        close = auction_creator
     )]
     pub auction_state: Box<Account<'info, AuctionState>>,
 
@@ -46,7 +47,7 @@ pub struct SettleAuction<'info> {
     /// CHECK: PDA authority for auction vault
     #[account(
         seeds = [SEED_AUCTION_VAULT_ACCOUNT, auction_creator.key().as_ref(), asset.key().as_ref()],
-        bump
+        bump,
     )]
     pub auction_vault_pda: UncheckedAccount<'info>,
 
@@ -54,7 +55,7 @@ pub struct SettleAuction<'info> {
     #[account(
         mut,
         seeds = [SEED_AUCTION_VAULT_ACCOUNT, auction_creator.key().as_ref(), asset.key().as_ref()],
-        bump
+        bump,
     )]
     pub auction_vault: InterfaceAccount<'info, TokenAccount>,
 
@@ -188,9 +189,11 @@ pub fn handle_settle_auction(ctx: Context<SettleAuction>) -> Result<()> {
     transfer_checked(transfer_bid_ctx, highest_bid_amount, usdc_decimals)?;
 
     // Generate signer seeds for the auction_vault PDA
+    let asset_key = ctx.accounts.asset.key();
     let vault_seeds = &[
         SEED_AUCTION_VAULT_ACCOUNT,
         auction_creator_key.as_ref(),
+        asset_key.as_ref(),
         &[ctx.bumps.auction_vault_pda],
     ];
     let vault_signer_seeds = &[&vault_seeds[..]];
@@ -211,6 +214,27 @@ pub fn handle_settle_auction(ctx: Context<SettleAuction>) -> Result<()> {
 
     let auction_vault_amount = ctx.accounts.auction_vault.amount;
     transfer_checked(transfer_tokens_ctx, auction_vault_amount, asset_decimals)?;
+
+    msg!(
+        "Transferred {} USDC to auction creator and {} tokens to highest bidder",
+        highest_bid_amount,
+        auction_vault_amount
+    );
+
+    // Close the auction_vault account after transferring all tokens to the highest bidder
+    let close_vault_account = anchor_spl::token_interface::CloseAccount {
+        account: ctx.accounts.auction_vault.to_account_info(),
+        destination: ctx.accounts.auction_creator.to_account_info(),
+        authority: ctx.accounts.auction_vault.to_account_info(),
+    };
+
+    let close_vault_ctx = CpiContext::new_with_signer(
+        ctx.accounts.token_program.to_account_info(),
+        close_vault_account,
+        vault_signer_seeds,
+    );
+
+    anchor_spl::token_interface::close_account(close_vault_ctx)?;
 
     // Mark auction as settled
     ctx.accounts.auction_state.is_active = false;

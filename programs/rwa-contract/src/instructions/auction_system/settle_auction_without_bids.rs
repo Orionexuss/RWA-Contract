@@ -28,7 +28,8 @@ pub struct SettleAuctionWithoutBids<'info> {
             auction_creator.key().as_ref(),
             asset.key().as_ref()
         ],
-        bump
+        bump,
+        close = auction_creator
     )]
     pub auction_state: Account<'info, AuctionState>,
 
@@ -38,6 +39,7 @@ pub struct SettleAuctionWithoutBids<'info> {
     )]
     pub asset_state: Account<'info, AssetState>,
 
+    /// CHECK: PDA authority for auction vault
     #[account(
         seeds = [
             SEED_AUCTION_VAULT_ACCOUNT,
@@ -55,7 +57,7 @@ pub struct SettleAuctionWithoutBids<'info> {
             auction_creator.key().as_ref(),
             asset.key().as_ref()
         ],
-        bump
+        bump,
     )]
     pub auction_vault: InterfaceAccount<'info, TokenAccount>,
 
